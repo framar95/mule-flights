@@ -17,8 +17,8 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="3cc4b83b-56a0-4429-9fd0-78ceff3075a2" basePath="/api/timezone" >
 		<http:request-connection host="http://worldtimeapi.org" port="80" />
 	</http:request-config>
-	<flow name="getFligthsQueryParams" doc:id="caba2c15-090d-44df-b106-7bb08c28cd1b" >
-		<http:listener doc:name="GET/flights?{destination}" doc:id="c2982094-be0e-417f-93a9-f4b635468e2d" config-ref="HTTP_Listener_config" path="/fligths" allowedMethods="GET"/>
+	<flow name="getFlightsQueryParams" doc:id="caba2c15-090d-44df-b106-7bb08c28cd1b" >
+		<http:listener doc:name="GET/flights?{destination}" doc:id="c2982094-be0e-417f-93a9-f4b635468e2d" config-ref="HTTP_Listener_config" path="/flights" allowedMethods="GET"/>
 		<set-variable value="#[message.attributes.queryParams.destination]" doc:name="Set Variable Destination" doc:id="b20f1c8f-7c6e-49e3-9983-d70e172e64cf" variableName="fligth_destination"/>
 		<choice doc:name="Choice" doc:id="662cce76-8df7-4957-aea2-7115a5dc9018" >
 			<when expression="#[vars.fligth_destination == null]">
@@ -27,7 +27,7 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 		</db:select>
 			</when>
 			<otherwise >
-				<db:select doc:name="Select all fligth with dest" doc:id="7bebe9d7-31c6-4838-995e-52faf32447ac" config-ref="Database_Config">
+				<db:select doc:name="Select all flights with dest" doc:id="7bebe9d7-31c6-4838-995e-52faf32447ac" config-ref="Database_Config">
 					<db:sql ><![CDATA[SELECT *  FROM american WHERE toAirport = :destination]]></db:sql>
 					<db:input-parameters ><![CDATA[#[{"destination" : vars.fligth_destination }]]]></db:input-parameters>
 				</db:select>
@@ -43,47 +43,11 @@ payload]]></ee:set-payload>
 		</ee:transform>
 		<logger level="INFO" doc:name="Log Fetch Flights Destination" doc:id="aed4154d-781c-4edc-927c-a62edf0aaee2" message="#[payload.destination]"/>
 	</flow>
-	<sub-flow name="getFligthsByID_Sub_Flow" doc:id="f81105d8-bcb6-4960-a0e6-a69d287d7f9e" >
-		<ee:transform doc:name="Transform Message" doc:id="388d14e0-9bfb-4e7a-82cb-a47b78095475">
-			<ee:message>
-				<ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-payload]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-		<logger level="INFO" doc:name="Log Fetch Flights ID" doc:id="1f7d6111-9964-4f5c-9c18-defa21a2174c" message="#[payload.ID]" />
-	</sub-flow>
-	<flow name="getFligthsByID" doc:id="5a077a2a-3889-4bb2-8b10-7780ece95705" >
-		<http:listener doc:name="GET/flights/{ID}" doc:id="b704cd2f-c29e-403e-a3de-9d2196e1c21f" config-ref="HTTP_Listener_config" path="/fligths/{ID}" allowedMethods="GET" />
-		<set-variable value="#[message.attributes.uriParams.ID]" doc:name="Set Flight ID" doc:id="372419e0-9b19-4a76-84a9-c3c1805ce09b" variableName="flight_id"/>
-		<validation:is-number numberType="INTEGER" doc:name="Is number" doc:id="3dbd42b1-5b2b-42ad-9c91-ce293409288b" config-ref="Validation_Config" value="#[vars.flight_id]" minValue="0"/>
-		<db:select doc:name="Select all flights by ID" doc:id="615f4d36-b39e-4e1b-9fc1-02de131e362b" config-ref="Database_Config" >
-			<db:sql ><![CDATA[SELECT * FROM american WHERE id = :ID]]></db:sql>
-			<db:input-parameters ><![CDATA[#[{ "ID": vars.flight_id }]]]></db:input-parameters>
-		</db:select>
-		<flow-ref doc:name="Flow Reference" doc:id="e5c4a513-ec1d-4123-8be6-9ad9ecfa091b" name="getFligthsByID_Sub_Flow"/>
-	</flow>
-	<flow name="post-flight" doc:id="3f889b1b-7bb5-492f-b052-e3c5c0f047a5" >
-		<http:listener doc:name="POST /flights" doc:id="9bb6a4e6-df08-4f17-abf6-806060e23865" config-ref="HTTP_Listener_config" path="/flights" allowedMethods="POST">
-		</http:listener>
-		<ee:transform doc:name="Transform Message" doc:id="2fa88217-0803-46c3-917e-8cd333a97f77" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	"message": "Flight added (but not really!)"
-
-}]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-	</flow>
 	<flow name="remoteRequest" doc:id="8c66171e-8eb9-462e-9d00-abe180a33977" >
 		<http:listener doc:name="Listener" doc:id="1299df43-e108-4ca9-a812-33cd89dadc9a" config-ref="HTTP_Listener_config" allowedMethods="GET" path="/time"/>
 		<http:request method="GET" doc:name="Request" doc:id="5da910ee-67d7-4a1f-9bf2-4a3b92d357a6" config-ref="HTTP_Request_configuration" path="/" responseTimeout="3000000"/>
 	</flow>
-	<flow name="getFligthsByID" doc:id="5a077a2a-3889-4bb2-8b10-7780ece95705" >
+	<flow name="getFlightsByID" doc:id="5a077a2a-3889-4bb2-8b10-7780ece95705" >
 		<http:listener doc:name="GET/flights/{ID}" doc:id="b704cd2f-c29e-403e-a3de-9d2196e1c21f" config-ref="HTTP_Listener_config" path="/fligths/{ID}" allowedMethods="GET" />
 		<set-variable value="#[message.attributes.uriParams.ID]" doc:name="Set Flight ID" doc:id="372419e0-9b19-4a76-84a9-c3c1805ce09b" variableName="flight_id"/>
 		<db:select doc:name="Select all flights by ID" doc:id="615f4d36-b39e-4e1b-9fc1-02de131e362b" config-ref="Database_Config" >
