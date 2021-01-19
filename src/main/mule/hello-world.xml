@@ -79,7 +79,7 @@ output application/json
 			</ee:message>
 		</ee:transform>
 	</flow>
-	<flow name="hello-worldFlow" doc:id="8c66171e-8eb9-462e-9d00-abe180a33977" >
+	<flow name="remoteRequest" doc:id="8c66171e-8eb9-462e-9d00-abe180a33977" >
 		<http:listener doc:name="Listener" doc:id="1299df43-e108-4ca9-a812-33cd89dadc9a" config-ref="HTTP_Listener_config" allowedMethods="GET" path="/time"/>
 		<http:request method="GET" doc:name="Request" doc:id="5da910ee-67d7-4a1f-9bf2-4a3b92d357a6" config-ref="HTTP_Request_configuration" path="/" responseTimeout="3000000"/>
 	</flow>
